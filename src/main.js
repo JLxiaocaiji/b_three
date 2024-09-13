@@ -55,7 +55,7 @@ camera.position.x = 5;  // x轴
 // 设置相机看向位置
 camera.lookAt(0, 0, 0);
 
-// 添加坐标辅助器 5为线段长度，
+// 添加坐标辅助器 5为线段长度，红色代表 X 轴. 绿色代表 Y 轴. 蓝色代表 Z 轴.
 const axesHelper = new THREE.AxesHelper(5);
 scene.add(axesHelper)
 

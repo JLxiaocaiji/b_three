@@ -1,31 +1,70 @@
-import * as THREE from "three"
-// 导入轨道控制
-import { OrbitControls, orbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 /**
- * 相机
+ * 1. scene
  */
-// field of view 视野角度
-let fov = 75
-let aspect = window.innerWidth / window.innerHeight
-let near = 0.001
-let far = 1000
-const camera = new THREE.PerspectiveCamera(
-    fov, aspect, near, far
-)
+const scene = new THREE.Scene();
 
+/**
+ * 2. camera
+ */
+const camera = new THREE.PerspectiveCamera(
+    75, window.innerWidth / window.innerHeight, 0.1, 1000
+)
 // camera.position.z = 10
 camera.position.set(0, 0, 10)
 
+/**
+ * Mesh
+ */
+for( let i = 0; i < 50; i++) {
+    const geometry = new THREE.BufferGeometry();
+    const positionArr = new Float32Array(9)
+    for( let j = 0; j < 9; j++) {
+        positionArr[j] = Math.random() * 10 - 5;
+    }
 
-// 渲染器
+    geometry.setAttribute("position", new THREE.BufferAttribute(positionArr, 3))
+
+    let color = new THREE.Color(Math.random(), Math.random(), Math.random())
+    const material = new THREE.MeshBasicMaterial({
+        color: color, transparent: true, opacity: 0.5
+    })
+
+    const mesh = new THREE.Mesh(geometry, material)
+
+    scene.add(mesh)
+}
+
 const renderer = new THREE.WebGLRenderer({
-    // 抗齿距
-    antialias: true,
-});
+    antialias: true
+})
 renderer.setSize(window.innerWidth, window.innerHeight)
 
-document.body.appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement)
 
-// 创建轨道控制器
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true
+
+// scene 不需加 controls
+// scene.add(controls)
+
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper)
+
+const render = () => {
+    controls.update()
+    renderer.render(scene, camera)
+    requestAnimationFrame(render)
+}
+render()
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.setPixelRatio(window.devicePixelRatio)
+})
+
