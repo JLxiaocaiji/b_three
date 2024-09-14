@@ -2,55 +2,75 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 /**
- * 1. scene
+ * 1.scene
  */
 const scene = new THREE.Scene();
 
 /**
- * 2. camera
+ * 2.camera
  */
 const camera = new THREE.PerspectiveCamera(
     75, window.innerWidth / window.innerHeight, 0.1, 1000
 )
-// camera.position.z = 10
-camera.position.set(0, 0, 10)
+camera.position.set(1, 1, 1)
 
 /**
- * Mesh
+ * 3.renderer
  */
-for( let i = 0; i < 50; i++) {
-    const geometry = new THREE.BufferGeometry();
-    const positionArr = new Float32Array(9)
-    for( let j = 0; j < 9; j++) {
-        positionArr[j] = Math.random() * 10 - 5;
-    }
-
-    geometry.setAttribute("position", new THREE.BufferAttribute(positionArr, 3))
-
-    let color = new THREE.Color(Math.random(), Math.random(), Math.random())
-    const material = new THREE.MeshBasicMaterial({
-        color: color, transparent: true, opacity: 0.5
-    })
-
-    const mesh = new THREE.Mesh(geometry, material)
-
-    scene.add(mesh)
-}
-
 const renderer = new THREE.WebGLRenderer({
-    antialias: true
+    antialias: true,
 })
 renderer.setSize(window.innerWidth, window.innerHeight)
 
-document.body.appendChild(renderer.domElement)
+/**
+ * 4.mesh
+ */
+const textureLoader = new THREE.TextureLoader()
+const doorColorTexture = textureLoader.load("./textures/door/color.jpg");
+const texture = textureLoader.load("./textures/minecraft.png");
 
-const controls = new OrbitControls(camera, renderer.domElement);
+console.log(doorColorTexture)
+doorColorTexture.offset.x = 0.5
+doorColorTexture.offset.y = 0.5
+// doorColorTexture.offset.set(0.5, 0.5)
+
+// 设置旋转的原点
+doorColorTexture.center.set(0.5, 0.5)
+// 旋转45deg
+doorColorTexture.rotation = Math.PI / 4
+// 设置纹理的重复
+doorColorTexture.repeat.set(2, 3)
+
+// 设置U方向的包裹模式为镜像重复
+doorColorTexture.wrapS = THREE.MirroredRepeatWrapping;
+// 设置V方向的包裹模式为普通重复
+doorColorTexture.wrapT = THREE.RepeatWrapping;
+
+// 设置当 放大或 缩小 的纹理显示
+// minFilter 属性用于定义当纹理被缩小（minification）时的过滤模式
+// THREE.LinearFilter 是一种线性过滤模式，它会使用纹理坐标周围的像素值来创建一个平滑的插值结果，从而减少锯齿和模糊效果
+texture.minFilter = THREE.LinearFilter;
+// magFilter 属性用于定义当纹理被放大（magnification）时的过滤模式
+texture.magFilter = THREE.LinearFilter;
+
+const cubeGeometry = new THREE.BoxGeometry(1, 1, 1)
+const basicMaterial = new THREE.MeshBasicMaterial({
+    color: "#ffff00",
+    // 材质的纹理贴图
+    map: texture,
+    transparent: true,
+    opacity: 0.3,
+    // side: THREE.DoubleSide, // 设置材质的渲染面，默认为THREE.FrontSide，即正面渲染
+})
+
+const cube = new THREE.Mesh(cubeGeometry, basicMaterial)
+
+scene.add(cube)
+
+const controls = new OrbitControls(camera, renderer.domElement)
 controls.enableDamping = true
 
-// scene 不需加 controls
-// scene.add(controls)
-
-const axesHelper = new THREE.AxesHelper(5);
+const axesHelper = new THREE.AxesHelper(5)
 scene.add(axesHelper)
 
 const render = () => {
@@ -68,3 +88,4 @@ window.addEventListener("resize", () => {
     renderer.setPixelRatio(window.devicePixelRatio)
 })
 
+document.body.appendChild(renderer.domElement)
