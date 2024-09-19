@@ -58,6 +58,8 @@ const basicMaterial = new THREE.MeshBasicMaterial({
     color: "#ffff00",
     // 材质的纹理贴图
     map: texture,
+    transparent: true,
+    opacity: 0.3,
     // side: THREE.DoubleSide, // 设置材质的渲染面，默认为THREE.FrontSide，即正面渲染
 })
 
