@@ -1,154 +1,103 @@
-import * as THREE from "three";
+import * as THREE from "three"
 // 导入轨道控制器
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { texture } from "three/examples/jsm/nodes/Nodes.js";
+
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
 
-// 1、创建场景
+// RGBELoader 是一个用于加载HDR（高动态范围）图像的加载器，这些图像通常用于创建更为逼真的光照和反射效果
+const rgbeLoader = new RGBELoader();
+// loadAsync方法用于异步加载HDR图像，并返回一个Promise对象。一旦加载完成，它将解析为一个纹理（Texture）对象
+rgbeLoader.loadAsync("textures/hdr/002.hdr").then((texture) => {
+  // 设置纹理的映射类型为THREE.EquirectangularReflectionMapping，这是一种用于环境映射的特殊纹理映射方式，适用于全景HDR图像
+  // 映射适用于HDR环境贴图，它们通常是equirectangular格式的，即经纬度映射，可以环绕整个场景
+  texture.mapping = THREE.EquirectangularReflectionMapping;
+  // 将加载的HDR纹理设置为场景的背景。这意味着整个场景的背景将被这个HDR图像覆盖
+  scene.background = texture;
+  // 将HDR纹理同时设置为场景的环境纹理。环境纹理会影响场景中所有物体的反射和折射效果，特别是对于使用了MeshStandardMaterial或MeshPhysicalMaterial的材料
+  scene.environment = texture;
+})
+
 const scene = new THREE.Scene();
 
-// 2、创建相机
 const camera = new THREE.PerspectiveCamera(
   75, // field of view
   window.innerWidth / window.innerHeight,   // aspect
-  0.1,  // near,
-  1000, // far
+  0.1, // near
+  1000,   // far
 )
-
 camera.position.set(0, 0, 10)
-scene.add(camera)
 
-var div = document.createElement("div")
-div.style.width = "200px";
-div.style.height = "200px";
-div.style.position = "fixed";
-div.style.right = 0;
-div.style.top = 0;
-div.style.color = "#fff";
-document.body.appendChild(div)
+// 设置cube纹理加载器
+// 加载CubeTexture的一个类。 内部使用ImageLoader来加载文件
+const cubeTextureLoader = new THREE.CubeTextureLoader();
+// 必须要有 x,y,z 3个方向 p,n 2种图片
+// const envMapTexture = cubeTextureLoader.load([
+//   "textures/environmentMaps/1/px.jpg",
+//   "textures/environmentMaps/1/nx.jpg",
+//   "textures/environmentMaps/1/py.jpg",
+//   "textures/environmentMaps/1/ny.jpg",
+//   "textures/environmentMaps/1/pz.jpg",
+//   "textures/environmentMaps/1/nz.jpg",
+// ])
 
-// https://threejs.org/docs/index.html#api/zh/loaders/managers/LoadingManager
-let event = {};
-event.onLoad = function() {
-  console.log("图片加载完成");
-}
-
-event.onProgress = function(url, num, total) {
-  console.log("图片加载完成:", url);
-  console.log("图片加载进度:", num);
-  console.log("图片总数:", total);
-  let value = ((num / total) * 100).toFixed(2) + "%";
-  console.log("加载进度的百分比：", value);
-  div.innerHTML = value;
-}
-
-event.onError = function(e) {
-  console.log("图片加载出现错误");
-  console.log(e);
-}
-
-// 设置加载管理器
-const loadingManager = new THREE.LoadingManager(
-  event.onLoad,
-  event.onProgress,
-  event.onError,
-)
-
-const textureLoader = new THREE.TextureLoader(loadingManager);
-const doorColorTexture = textureLoader.load("./textures/door/color.jpg")
-
-const doorAlphaTexture = textureLoader.load("./textures/door/alpha.jpg");
-const doorAoTexture = textureLoader.load(
-  "./textures/door/ambientOcclusion.jpg"
-);
-//导入置换贴图
-const doorHeightTexture = textureLoader.load("./textures/door/height.jpg");
-// 导入粗糙度贴图
-const roughnessTexture = textureLoader.load("./textures/door/roughness.jpg");
-// 导入金属贴图
-const metalnessTexture = textureLoader.load("./textures/door/metalness.jpg");
-// 导入法线贴图
-const normalTexture = textureLoader.load("./textures/door/normal.jpg");
+// 第二种加载方式
+const envMapTexture = cubeTextureLoader.setPath("textures/environmentMaps/").load([
+  "1/px.jpg",
+  "1/nx.jpg",
+  "1/py.jpg",
+  "1/ny.jpg",
+  "1/pz.jpg",
+  "1/nz.jpg",
+])
 
 
-// 添加物体
-const cubeGeometry = new THREE.BoxGeometry(1, 1, 1, 100, 100, 100);
+// 几何体
+const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
 
 // 材质
 const material = new THREE.MeshStandardMaterial({
-  color: "#ffff00",
-  // 颜色贴图。可以选择包括一个alpha通道，通常与.transparent 或.alphaTest。默认为null。 纹理贴图颜色由漫反射颜色.color调节
-  map: doorColorTexture,
-  // alpha贴图是一张灰度纹理，用于控制整个表面的不透明度。（黑色：完全透明；白色：完全不透明）。 默认值为null
-  alphaMap: doorAlphaTexture,
-  transparent: true,
-
-  // 环境遮蔽贴图: 描述了在几何体的不同区域中，光线能够到达的难易程度
-  aoMap: doorAoTexture,
-  // 环境遮挡效果的强度。默认值为1。零是不遮挡效果。
-  aoMapIntensity: 1,
-
-  // 位移贴图(Displacement Map),通过在材质上应用一张纹理贴图来改变顶点的位置，从而创造出更加详细和复杂的表面细节，而不需要增加额外的几何复杂度。位移贴图通常用于模拟物体表面的凹凸不平
-  displacementMap: doorHeightTexture,
-  displacementScale: 0.1,
-  // 材质的粗糙程度。0.0表示平滑的镜面反射，1.0表示完全漫反射。默认值为1.0。如果还提供roughnessMap，则两个值相乘
-  roughness: 1,
-  // 该纹理的绿色通道用于改变材质的粗糙度, 与上面的 roughness 相乘
-  roughnessMap: roughnessTexture,
-  // 材质与金属的相似度。非金属材质，如木材或石材，使用0.0，金属使用1.0，通常没有中间值。 默认值为0.0。0.0到1.0之间的值可用于生锈金属的外观。如果还提供了metalnessMap，则两个值相乘
-  metalness: 1,
-  // 与上面的 metalness 相乘
-  metalnessMap: metalnessTexture,
-  normalMap: normalTexture,
+  metalness: 0.7,
+  roughness: 0.1,
+  // envMap属性被设置为之前加载的立方体贴图，这样材质就能反射出加载的环境映射
+  envMap: envMapTexture,
 })
 
-material.side = THREE.DoubleSide;
-const cube = new THREE.Mesh(cubeGeometry, material);
-scene.add(cube);
-// 给cube添加第二组uv
-cubeGeometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(cubeGeometry.attributes.uv.array, 2)
-)
+// 场景的背景为环境映射纹理，使得渲染的场景背景与物体反射的环境相匹配
+scene.background = envMapTexture;
+// 该纹理贴图将会被设为场景中所有物理材质的环境贴图, 场景的全局环境，这会影响场景中所有具有环境映射属性的材质
+scene.environment = envMapTexture;
 
-// 添加平面
-// width, height, widthSegments, heightSegments
-const planeGeometry = new THREE.PlaneGeometry(1, 1, 200, 200)
-const plane = new THREE.Mesh(planeGeometry, material);
-plane.position.set(1.5, 0, 0);
-scene.add(plane);
-planeGeometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(planeGeometry.attributes.uv.array, 2)
-)
+const sphere = new THREE.Mesh(sphereGeometry, material)
+scene.add(sphere)
 
-// 灯光
-// 环境光
-const light = new THREE.AmbientLight(0xffffff, 0.5); 
+// 灯光, 没有灯光会显示不出来
+const light = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(light);
-//直线光源
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(10, 10, 10);
-scene.add(directionalLight);
 
-
-
+// renderer
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(window.innerWidth, window.innerHeight)
 
 
 const controls = new OrbitControls(camera, renderer.domElement)
 controls.enabledDamping = true;
 
+
 const axesHelper = new THREE.AxesHelper(5)
 scene.add(axesHelper)
 
 const render = () => {
-  controls.update();
+  controls.update()
+  // 必须这个顺序
   renderer.render(scene, camera)
+  // 渲染下一帧的时候就会调用render函数
   requestAnimationFrame(render)
 }
 render()
+
+document.body.appendChild(renderer.domElement);
+
 
 // 监听画面变化，更新渲染画面
 window.addEventListener("resize", () => {
@@ -163,5 +112,3 @@ window.addEventListener("resize", () => {
   //   设置渲染器的像素比
   renderer.setPixelRatio(window.devicePixelRatio);
 });
-
-document.body.appendChild(renderer.domElement)
