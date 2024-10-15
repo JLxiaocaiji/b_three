@@ -28,7 +28,9 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 10)
 
 const sphereGeometry = new THREE.SphereGeometry(1, 20, 20)
-const material = new THREE.MeshStandardMaterial();
+const material = new THREE.MeshStandardMaterial({
+  side: THREE.DoubleSide,
+});
 const sphere = new THREE.Mesh(sphereGeometry, material)
 // 投射阴影
 sphere.castShadow = true;
