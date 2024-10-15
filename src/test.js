@@ -1,103 +1,117 @@
-import * as THREE from "three"
+import * as THREE from "three";
 // 导入轨道控制器
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
+// 导入动画库
+import gsap from "gsap";
+// 导入dat.gui
+import * as dat from "dat.gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+// 目标：阴影的属性与投影相机原理
+// 灯光阴影
+// 1、材质要满足能够对光照有反应
+// 2、设置渲染器开启阴影的计算 renderer.shadowMap.enabled = true;
+// 3、设置光照投射阴影 directionalLight.castShadow = true;
+// 4、设置物体投射阴影 sphere.castShadow = true;
+// 5、设置物体接收阴影 plane.receiveShadow = true;
 
-
-// RGBELoader 是一个用于加载HDR（高动态范围）图像的加载器，这些图像通常用于创建更为逼真的光照和反射效果
-const rgbeLoader = new RGBELoader();
-// loadAsync方法用于异步加载HDR图像，并返回一个Promise对象。一旦加载完成，它将解析为一个纹理（Texture）对象
-rgbeLoader.loadAsync("textures/hdr/002.hdr").then((texture) => {
-  // 设置纹理的映射类型为THREE.EquirectangularReflectionMapping，这是一种用于环境映射的特殊纹理映射方式，适用于全景HDR图像
-  // 映射适用于HDR环境贴图，它们通常是equirectangular格式的，即经纬度映射，可以环绕整个场景
-  texture.mapping = THREE.EquirectangularReflectionMapping;
-  // 将加载的HDR纹理设置为场景的背景。这意味着整个场景的背景将被这个HDR图像覆盖
-  scene.background = texture;
-  // 将HDR纹理同时设置为场景的环境纹理。环境纹理会影响场景中所有物体的反射和折射效果，特别是对于使用了MeshStandardMaterial或MeshPhysicalMaterial的材料
-  scene.environment = texture;
-})
-
+const gui = new dat.GUI();
+// 1、创建场景
 const scene = new THREE.Scene();
 
+// 2、创建相机
 const camera = new THREE.PerspectiveCamera(
-  75, // field of view
-  window.innerWidth / window.innerHeight,   // aspect
-  0.1, // near
-  1000,   // far
-)
-camera.position.set(0, 0, 10)
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
 
-// 设置cube纹理加载器
-// 加载CubeTexture的一个类。 内部使用ImageLoader来加载文件
-const cubeTextureLoader = new THREE.CubeTextureLoader();
-// 必须要有 x,y,z 3个方向 p,n 2种图片
-// const envMapTexture = cubeTextureLoader.load([
-//   "textures/environmentMaps/1/px.jpg",
-//   "textures/environmentMaps/1/nx.jpg",
-//   "textures/environmentMaps/1/py.jpg",
-//   "textures/environmentMaps/1/ny.jpg",
-//   "textures/environmentMaps/1/pz.jpg",
-//   "textures/environmentMaps/1/nz.jpg",
-// ])
+// 设置相机位置
+camera.position.set(0, 0, 10);
+scene.add(camera);
 
-// 第二种加载方式
-const envMapTexture = cubeTextureLoader.setPath("textures/environmentMaps/").load([
-  "1/px.jpg",
-  "1/nx.jpg",
-  "1/py.jpg",
-  "1/ny.jpg",
-  "1/pz.jpg",
-  "1/nz.jpg",
-])
-
-
-// 几何体
 const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
+const material = new THREE.MeshStandardMaterial();
+const sphere = new THREE.Mesh(sphereGeometry, material);
+// 投射阴影
+sphere.castShadow = true;
+scene.add(sphere);
 
-// 材质
-const material = new THREE.MeshStandardMaterial({
-  metalness: 0.7,
-  roughness: 0.1,
-  // envMap属性被设置为之前加载的立方体贴图，这样材质就能反射出加载的环境映射
-  envMap: envMapTexture,
-})
+// // 创建平面
+const planeGeometry = new THREE.PlaneGeometry(10, 10);
+const plane = new THREE.Mesh(planeGeometry, material);
+plane.position.set(0, -1, 0);
+plane.rotation.x = -Math.PI / 2;
+// 接收阴影
+plane.receiveShadow = true;
+scene.add(plane);
 
-// 场景的背景为环境映射纹理，使得渲染的场景背景与物体反射的环境相匹配
-scene.background = envMapTexture;
-// 该纹理贴图将会被设为场景中所有物理材质的环境贴图, 场景的全局环境，这会影响场景中所有具有环境映射属性的材质
-scene.environment = envMapTexture;
-
-const sphere = new THREE.Mesh(sphereGeometry, material)
-scene.add(sphere)
-
-// 灯光, 没有灯光会显示不出来
-const light = new THREE.AmbientLight(0xffffff, 0.5);
+// 灯光
+// 环境光
+const light = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
 scene.add(light);
+//直线光源
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(5, 5, 5);
+directionalLight.castShadow = true;
 
-// renderer
+// 设置阴影贴图模糊度
+directionalLight.shadow.radius = 20;
+// 设置阴影贴图的分辨率
+directionalLight.shadow.mapSize.set(4096, 4096);
+// console.log(directionalLight.shadow);
+
+// 设置平行光投射相机的属性
+directionalLight.shadow.camera.near = 0.5;
+directionalLight.shadow.camera.far = 500;
+directionalLight.shadow.camera.top = 5;
+directionalLight.shadow.camera.bottom = -5;
+directionalLight.shadow.camera.left = -5;
+directionalLight.shadow.camera.right = 5;
+
+scene.add(directionalLight);
+gui
+  .add(directionalLight.shadow.camera, "near")
+  .min(0)
+  .max(10)
+  .step(0.1)
+  .onChange(() => {
+    directionalLight.shadow.camera.updateProjectionMatrix();
+  });
+
+// 初始化渲染器
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight)
+// 设置渲染的尺寸大小
+renderer.setSize(window.innerWidth, window.innerHeight);
+// 开启场景中的阴影贴图
+renderer.shadowMap.enabled = true;
 
-
-const controls = new OrbitControls(camera, renderer.domElement)
-controls.enabledDamping = true;
-
-
-const axesHelper = new THREE.AxesHelper(5)
-scene.add(axesHelper)
-
-const render = () => {
-  controls.update()
-  // 必须这个顺序
-  renderer.render(scene, camera)
-  // 渲染下一帧的时候就会调用render函数
-  requestAnimationFrame(render)
-}
-render()
-
+// console.log(renderer);
+// 将webgl渲染的canvas内容添加到body
 document.body.appendChild(renderer.domElement);
 
+// // 使用渲染器，通过相机将场景渲染进来
+// renderer.render(scene, camera);
+
+// 创建轨道控制器
+const controls = new OrbitControls(camera, renderer.domElement);
+// 设置控制器阻尼，让控制器更有真实效果,必须在动画循环里调用.update()。
+controls.enableDamping = true;
+
+// 添加坐标轴辅助器
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
+// 设置时钟
+const clock = new THREE.Clock();
+
+function render() {
+  controls.update();
+  renderer.render(scene, camera);
+  //   渲染下一帧的时候就会调用render函数
+  requestAnimationFrame(render);
+}
+
+render();
 
 // 监听画面变化，更新渲染画面
 window.addEventListener("resize", () => {
