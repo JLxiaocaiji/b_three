@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from "three"
 // 导入轨道控制器
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 // 导入动画库
@@ -18,7 +18,6 @@ const gui = new dat.GUI();
 // 1、创建场景
 const scene = new THREE.Scene();
 
-// 2、创建相机
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -114,6 +113,9 @@ function render() {
 }
 
 render();
+
+document.body.appendChild(renderer.domElement);
+
 
 // 监听画面变化，更新渲染画面
 window.addEventListener("resize", () => {
