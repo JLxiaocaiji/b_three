@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^4.4.5"
+    "vite": "^5.2.0"
   },
   "dependencies": {
-    "three": "^0.158.0",
-    "dat.gui": "^0.7.9",
-    "gsap": "^3.10.3"
+    "lil-gui": "^0.19.2",
+    "stats.js": "^0.17.0",
+    "three": "^0.163.0"
   }
 }

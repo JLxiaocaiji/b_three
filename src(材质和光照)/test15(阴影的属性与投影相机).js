@@ -63,15 +63,22 @@ directionalLight.shadow.mapSize.set(4096, 4096);
 // console.log(directionalLight.shadow);
 
 // 设置平行光投射相机的属性
+// 设置阴影相机的近平面距离为0.5。任何距离小于这个值的对象都不会投射阴影
 directionalLight.shadow.camera.near = 0.5;
+// 设置阴影相机的远平面距离为500。任何距离大于这个值的对象都不会投射阴影
 directionalLight.shadow.camera.far = 500;
+// 设置阴影相机视锥体的顶部界限为5。这定义了阴影映射区域的上边缘
 directionalLight.shadow.camera.top = 5;
+// 设置阴影相机视锥体的底部界限为-5。这定义了阴影映射区域的下边缘
 directionalLight.shadow.camera.bottom = -5;
+// 设置阴影相机视锥体的左侧界限为-5。这定义了阴影映射区域的左边缘
 directionalLight.shadow.camera.left = -5;
+// 设置阴影相机视锥体的右侧界限为5。这定义了阴影映射区域的右边缘
 directionalLight.shadow.camera.right = 5;
 
 scene.add(directionalLight);
 gui
+// 调整directionalLight.shadow.camera对象的near属性
   .add(directionalLight.shadow.camera, "near")
   .min(0)
   .max(10)
@@ -102,8 +109,7 @@ controls.enableDamping = true;
 // 添加坐标轴辅助器
 const axesHelper = new THREE.AxesHelper(5);
 scene.add(axesHelper);
-// 设置时钟
-const clock = new THREE.Clock();
+
 
 function render() {
   controls.update();
