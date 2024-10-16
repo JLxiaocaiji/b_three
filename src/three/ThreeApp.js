@@ -5,6 +5,8 @@ import { createCamera } from "./base/camera"
 import { createControl } from "./base/control"
 import { createScene } from "./base/scene"
 import { createRenderer } from "./base/renderer"
+import { initComposer } from "./base/composer"
+import { createModels } from "./main/model"
 
 
 // 单例模式, 一个类只有一个实例，并提供一个全局访问点来访问这个实例
@@ -73,6 +75,25 @@ class ThreeApp {
         this.renderer = createRenderer(container)
         // 后处理渲染器 composer
         this.composer = initComposer(this.renderer, this.scene, this.camera)
+
+        // 目标渲染
+        // 创建一个新的WebGLCubeRenderTarget对象,专门用于生成立方体贴图（Cube Map）,参数256指定了立方体贴图的每个面的分辨率，即每个面都是256x256像素
+        this.renderTarget = new THREE.WebGLCubeRenderTarget(256)
+        // THREE.HalfFloatType是一个纹理类型，它允许使用16位浮点数来存储颜色信息，这比默认的8位整数类型提供了更高的颜色精度，这对于渲染高质量的反射和折射效果很有用
+        thus.renderTarget.texture.type = THREE.HalfFloatType
+
+        // 创建6个渲染到WebGLCubeRenderTarget的摄像机
+        // 参数 near, far, renderTarget
+        this.rtCubeCamera = new THREE.CubeCamera(1, 1000, this.renderTarget)
+        // 设置立方体相机所属的层（layer）,层是一种用于控制对象渲染的方式。通过设置不同的层，可以更精细地控制哪些对象被哪些相机看到
+        this.rtCubeCamera.layers.set(1)
+        // 这里只是个赋值操作，将层1的引用存储在场景（scene）的userData对象中
+        this.scene.userData.rtCubeCameraLayer =  1
+        // 将渲染目标（render target）的纹理（texture）存储在场景（scene）的userData属性中
+        this.scene.userData.dynamicMap = this.renderTarget.texture
+
+        // 场景组成内容 object3D
+        createModels(this.scene)
     }
 
     render() {

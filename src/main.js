@@ -1,4 +1,4 @@
-import { ThreeApp } from "./threejs/ThreeApp";
+import { ThreeApp } from "./three/ThreeApp";
 
 // onload 和 onbeforeunload 都是 window 事件
 
