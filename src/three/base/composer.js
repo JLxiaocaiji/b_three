@@ -54,7 +54,7 @@ function initComposer(renderer, scene, camera){
         camera,
         width: sizes.width,
         height: sizes.height,   
-        groundReflector: null,
+        groundReflector: null,  // 地面反射器，用于控制地面的反射效果,如果场景中有一个特定的平面需要特别处理反射效果，可以传递这个参数。如果不需要特别处理地面反射，可以设置为null
         selects: []
     })
 

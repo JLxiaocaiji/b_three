@@ -2,4 +2,6 @@ import GUI from "lil-gui"
 
 var gui = new GUI()
 
-export { gui }
+const debugObject = {}
+
+export { gui, debugObject }

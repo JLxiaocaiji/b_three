@@ -7,6 +7,7 @@ import { createScene } from "./base/scene"
 import { createRenderer } from "./base/renderer"
 import { initComposer } from "./base/composer"
 import { createModels } from "./main/model"
+import { createLight } from "./base/light"
 
 
 // 单例模式, 一个类只有一个实例，并提供一个全局访问点来访问这个实例
@@ -94,6 +95,11 @@ class ThreeApp {
 
         // 场景组成内容 object3D
         createModels(this.scene)
+
+        // 灯光
+        createLight(this.scene)
+
+        createDynamicEnv(this.scene)
     }
 
     render() {
