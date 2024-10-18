@@ -1,4 +1,6 @@
 import * as THREE from "three"
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { gui, debugObject } from '../system/gui'
 import isMobileDevice from "../utils/deviceType"
 import { ReflectorForSSRPass } from "three/examples/jsm/Addons.js"
@@ -6,6 +8,33 @@ import { sizes } from "../system/sizes"
 import { ssrPass } from '../base/composer';
 
 let scene = new THREE.Scene()
+
+const loadingManager = new THREE.LoadingManager(
+    () => {
+        console.log('Loaded successfully!')
+        setTimeout(() => {
+            setTimeout(() => {
+                // // 找到类名为"loader-container"的元素，并给它添加"loaded"类
+                document.querySelector(".loader-container").classList.add("loaded")
+                // 找到类名为"loader"的元素，并设置其右边框的颜色为透明
+                document.querySelector(".loader").setAttribute("style", "  border-right-color: #0000;")
+            }, 1500);
+        })
+    },
+    // 加载过程中更新进度时的回调函数
+    (itemUrl, itemsLoaded, itemsTotal) => {
+        let progressRatio = itemsLoaded / itemsTotal
+        let p = (progressRatio * 100).toFixed(0)
+    }
+)
+
+const gltfLoader = new GLTFLoader(loadingManager)
+// 用于加载经过Draco压缩的图形库
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath(import.meta.env.BASE_URL + 'draco/')
+
+// 在加载时bug 及 解决办法 https://blog.csdn.net/lgldl/article/details/123370916
+gltfLoader.setDRACOLoader(dracoLoader)
 
 const createModels = (_scene) => {
     scene = _scene
@@ -18,7 +47,7 @@ const createModels = (_scene) => {
 
     // import.meta.env.BASE_URL 是一个环境变量，它通常包含你的应用程序的基本URL
     // buffer 参数是加载的音频数据
-    audioLoader.load(import.meta.env.BASE_URL + "bg0.mp3", (buffer) => {
+    audioLoader.load(import.meta.env.BASE_URL + "audio/bg0.mp3", (buffer) => {
         // setBuffer 方法将加载的音频数据设置到位置音频对象中
         positionalAudio.setBuffer(buffer);
         // setRefDistance 方法设置了音频的参考距离，这是指音频开始衰减的距离
@@ -33,8 +62,8 @@ const createModels = (_scene) => {
         })
     });
 
-    // 异步加载一个 GLB 模型文件
-    gltfLoader.load(import.meta.env.BASE_URL + '911-draco.glb', (gltf)=> {
+    // 异步加载一个 GLB 模型文件 
+    gltfLoader.load(import.meta.env.BASE_URL + 'textures/model/911-draco.glb', (gltf)=> {
         // gltf.scene 是一个 THREE.Group 或 THREE.Scene 对象，它包含了加载的GLTF模型的所有几何体和材质
         const carModel = gltf.scene
         // 为模型设置一个名称，这在调试或通过名称查找模型时很有用
@@ -152,7 +181,7 @@ const updateAllMaterials = () => {
                 child.material.color.set("#222")    // 将材质的颜色设置为深灰色。
                 child.material.roughness = 1    // 将材质的粗糙度设置为1，使材质非常粗糙且反射较少。
                 child.material.normalScale.set(4, 4)    // 法线贴图对材质的影响程度, 典型范围是0-1,将法线贴图的效果放大4倍，增强材质的细节和深度感
-                child.material.material.envMap = scene.userData.dynamicMap  // 为材质设置环境贴图，用于反射效果
+                child.material.envMap = scene.userData.dynamicMap  // 为材质设置环境贴图，用于反射效果
             }
             // 材质名称为 窗户
             if (child.material.name === "window") {

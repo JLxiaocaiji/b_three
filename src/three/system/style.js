@@ -1,6 +1,6 @@
 import * as TEXTURE from "../texture/index.js"
 
-export const Style = {
+const Style = {
     default: {
         // 环境映射：指定材质使用的环境映射纹理
         envMap: TEXTURE.envMap,
@@ -16,3 +16,5 @@ export const Style = {
         envMapIntensity: 0.4
     }
 }
+
+export default Style

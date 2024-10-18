@@ -1,4 +1,5 @@
 import { PCFSoftShadowMap, SRGBColorSpace, WebGLRenderer } from "three"
+import { sizes} from "../system/sizes"
 
 /**
  * THREE.PCFSoftShadowMap 是 Three.js 库中的一个常量，用于指定阴影映射的类型，
@@ -26,7 +27,7 @@ export const createRenderer = ( container ) => {
     // 设置渲染器的大小以匹配画布的尺寸
     renderer.setSize(sizes.width, sizes.height)
     // 设置像素比，以匹配设备的像素比，但不超过2： Math.min() 函数返回作为输入参数的数字中最小的一个
-    renderer.setPixelRatio(Math.min(window.devicePixelRation, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
     // 设置输出颜色空间为sRGB颜色空间
     // 注意：在Three.js中，颜色空间设置可能不是直接这样设置的，具体取决于Three.js的版本

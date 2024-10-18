@@ -1,4 +1,5 @@
 import * as THREE from "three"
+import { gui } from '../system/gui';
 
 export const createDynamicEnv = (scene) => {
 
@@ -50,7 +51,7 @@ export const createDynamicEnv = (scene) => {
         side: THREE.BackSide,
     }))
 
-    // width, height, depth,
+    // 立方体，width, height, depth,
     const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({
         color: '#66edff',
     }))
@@ -62,6 +63,40 @@ export const createDynamicEnv = (scene) => {
         // 立方体在Z轴上的位置随时间变化，通过余弦函数实现周期性移动，范围在[-2, 0]之间
         cube.position.z = Math.cos(elapsedTime) - 1
     }
+
+    // ring: 戒指
+    const ring = new THREE.Mesh(
+        // 圆柱缓冲几何体 radiusTop(圆柱的顶部半径), radiusBottom(圆柱的底部半径), height, radialSegments(圆柱侧面周围的分段数), heightSegments(圆柱侧面沿着其高度的分段数), openEnded(圆锥底部是开放的还是封顶)
+        new THREE.CylinderGeometry(2, 2, 0.5, 16, 1, true), 
+        new THREE.MeshBasicMaterial({
+            color: '#fafeff',
+            side: THREE.DoubleSide,
+        })
+    )
+    // // 设置ring对象的旋转，使其绕X轴旋转90度（π/2弧度），Y轴和Z轴不旋转
+    ring.rotation.set(Math.PI * 0.5, 0, 0)
+    ring.userData.update = 
+        // deltaTime：帧时间差，这是指从上一帧到当前帧经过的时间，通常用于保证动画的平滑性和一致性，不受帧率变化的影响
+        // elapsedTime：这是指从动画开始到现在经过的总时间。
+        (deltaTime, elapsedTime) => {
+            // 每帧根据deltaTime（通常是帧时间间隔）增加ring对象的z轴位置
+            ring.position.z += 2 * deltaTime
+            // 如果ring对象的z轴位置大于4，将其重置为-5
+            if ( ring.position.z > 4) {
+                ring.position.z = -5
+            }
+        }
+
+    group.add(rect, rect2, sphere, cube, ring)
+    // 遍历group对象的所有子对象，将每个子对象设置到场景的特定层（在这里是scene.userData.rtCubeCameraLayer）
+    group.children.forEach( item => {
+        item.layers.set(scene.userData.rtCubeCameraLayer)
+    })
+
+    gui.addColor(rect.material, "color").name("rectColor")
+    gui.addColor(rect2.material, "color").name("rect2Color")
+    gui.addColor(sphere.material, "color").name("sphereColor")
+    gui.addColor(cube.material, "color").name("cubeColor")
 }
 
 /**

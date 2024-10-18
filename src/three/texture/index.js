@@ -23,3 +23,7 @@ skyTextureEquirec.mapping = THREE.EquirectangularReflectionMapping;
 // 纹理的颜色空间为sRGB。THREE.SRGBColorSpace表示纹理的颜色值是在sRGB颜色空间中，这通常用于确保在不同设备上颜色显示的一致性
 skyTextureEquirec.colorSpace = THREE.SRGBColorSpace;
 
+export const disposeTexture = () => {
+    envMap.dispose()
+    skyTextureEquirec.dispose()
+}
