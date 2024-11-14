@@ -90,7 +90,7 @@ export const createDynamicEnv = (scene) => {
     group.add(rect, rect2, sphere, cube, ring)
     // 遍历group对象的所有子对象，将每个子对象设置到场景的特定层（在这里是scene.userData.rtCubeCameraLayer）
     group.children.forEach( item => {
-        item.layers.set(scene.userData.rtCubeCameraLayer)
+        item.layers.set(scene.userData.rtCubeCameraLayer)   // 设定层数为 1
     })
 
     gui.addColor(rect.material, "color").name("rectColor")

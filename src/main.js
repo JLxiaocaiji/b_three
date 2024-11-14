@@ -4,6 +4,7 @@ import { ThreeApp } from "./three/ThreeApp";
 
 // load 事件在整个页面及所有依赖资源如样式表和图片都已完成加载时触发
 onload = () => {
+    // document.getElementById("webgl") 为 container
     const threeApp = new ThreeApp(document.getElementById("webgl"));
 
     threeApp.render();

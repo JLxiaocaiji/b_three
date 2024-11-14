@@ -6,6 +6,7 @@ import isMobileDevice from "../utils/deviceType"
 import { ReflectorForSSRPass } from "three/examples/jsm/Addons.js"
 import { sizes } from "../system/sizes"
 import { ssrPass } from '../base/composer';
+import { PositionalAudioHelper } from 'three/addons/helpers/PositionalAudioHelper.js';
 
 let scene = new THREE.Scene()
 
@@ -13,13 +14,11 @@ const loadingManager = new THREE.LoadingManager(
     () => {
         console.log('Loaded successfully!')
         setTimeout(() => {
-            setTimeout(() => {
-                // // 找到类名为"loader-container"的元素，并给它添加"loaded"类
-                document.querySelector(".loader-container").classList.add("loaded")
-                // 找到类名为"loader"的元素，并设置其右边框的颜色为透明
-                document.querySelector(".loader").setAttribute("style", "  border-right-color: #0000;")
-            }, 1500);
-        })
+            // // 找到类名为"loader-container"的元素，并给它添加"loaded"类, 加载完成添加该类样式
+            document.querySelector(".loader-container").classList.add("loaded")
+            // 找到类名为"loader"的元素，并设置其右边框的颜色为透明
+            document.querySelector(".loader").setAttribute("style", "  border-right-color: #0000;")
+        }, 1500);
     },
     // 加载过程中更新进度时的回调函数
     (itemUrl, itemsLoaded, itemsTotal) => {
@@ -42,8 +41,17 @@ const createModels = (_scene) => {
     // 背景音
     // scene.userData.listener 是一个 THREE.AudioListener 对象的引用，它被存储在场景（THREE.Scene）对象的 userData 属性中
     const positionalAudio = new THREE.PositionalAudio(scene.userData.listener)
+    /*
+        innerAngle: 内锥角度，单位是度。这是方向性锥体的最小角度，在这个角度内的声音会被最大程度地增强。
+        outerAngle: 外锥角度，单位是度。这是方向性锥体的最大角度，在这个角度外的声音会被逐渐减弱。
+        outerGain: 外锥角度外的衰减量，单位是分贝（dB）。这个值决定了方向性锥体外的声音衰减的程度
+    */
+    // positionalAudio.setDirectionalCone( 360, 230, 1 );
+    // const helper = new PositionalAudioHelper( positionalAudio );
+    // positionalAudio.add( helper );
     // 创建音频加载器
     const audioLoader = new THREE.AudioLoader();
+
 
     // import.meta.env.BASE_URL 是一个环境变量，它通常包含你的应用程序的基本URL
     // buffer 参数是加载的音频数据
@@ -73,6 +81,7 @@ const createModels = (_scene) => {
         // 添加模型
         scene.add(carModel)
         // 调整模型位置: 将模型在 y 轴上的位置向上调整0.63单位
+        console.log(carModel.position)
         carModel.position.y += 0.63
 
         console.log('carModel', carModel)
@@ -154,7 +163,7 @@ const createModels = (_scene) => {
     ssrPass.opacity = 0.55
     groundReflector.opacity = ssrPass.opacity
 
-
+    // debugObject 虽然原本是{}
     debugObject.painColor = '#b3b3ff'
     gui.addColor(debugObject, "painColor").onChange(()=> {
         updateAllMaterials()

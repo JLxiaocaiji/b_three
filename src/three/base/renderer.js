@@ -16,6 +16,7 @@ import { sizes} from "../system/sizes"
  */
 export const createRenderer = ( container ) => {
     const renderer = new WebGLRenderer({
+        // 一个供渲染器绘制其输出的canvas 它和下面的domElement属性对应。 如果没有传这个参数，会创建一个新canvas
         canvas: container,
         // 抗齿锯，更光滑
         antialias: true,

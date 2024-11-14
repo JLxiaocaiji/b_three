@@ -18,7 +18,7 @@ const vector3 = new THREE.Vector3();
 
 // 单例模式, 一个类只有一个实例，并提供一个全局访问点来访问这个实例
 class ThreeApp {
-    // // 静态属性，用于存储单例实例
+    // 静态属性，用于存储单例实例, 为 this
     static instance
 
     // 静态方法，用于获取单例实例
@@ -32,7 +32,9 @@ class ThreeApp {
     }
 
     // 构造函数是私有的，外部不能直接使用new创建实例
-    // container 本质是 canvas
+    /*
+        container 本质是 canvas： <canvas id="webgl" data-engine="three.js r163" width="649" height="780" style="touch-action: none; width: 866px; height: 1041px;"></canvas>
+    */
     constructor(container) {
         // 如果已经存在实例，则直接返回该实例
         if ( ThreeApp.instance) {
@@ -58,7 +60,7 @@ class ThreeApp {
         }
 
         gui.add(this, "isAllowComposer").name("SSR-enabled").onChange( e => {
-            if ( v && isMobileDevice()) {
+            if ( e && isMobileDevice()) {
                 if (confirm("您的设备暂不完全支持SSR效果，强制开启可能导致画面出现异常，是否继续？"))
                     this.isAllowComposer = true
                 else
@@ -91,6 +93,10 @@ class ThreeApp {
 
         // 创建6个渲染到WebGLCubeRenderTarget的摄像机
         // 参数 near, far, renderTarget
+        /*
+            用于生成环境贴图（Environment Maps）或反射贴图（Reflection Maps），能够捕捉场景周围的全景图像。
+            THREE.CubeCamera 会在每个渲染帧自动渲染六个方向（前、后、左、右、上、下）的场景视图，并将这些视图拼接成一个立方体贴图（Cube Map）
+        */
         this.rtCubeCamera = new THREE.CubeCamera(1, 1000, this.renderTarget)
         // 设置立方体相机所属的层（layer）,层是一种用于控制对象渲染的方式。通过设置不同的层，可以更精细地控制哪些对象被哪些相机看到
         this.rtCubeCamera.layers.set(1)

@@ -11,19 +11,11 @@ const rgbeLoader = new RGBELoader();
 rgbeLoader.loadAsync("textures/hdr/002.hdr").then((texture) => {
   // 设置纹理的映射类型为THREE.EquirectangularReflectionMapping，这是一种用于环境映射的特殊纹理映射方式，适用于全景HDR图像
   // 映射适用于HDR环境贴图，它们通常是equirectangular格式的，即经纬度映射，可以环绕整个场景
-<<<<<<< HEAD
-  // texture.mapping = THREE.EquirectangularReflectionMapping;
-  // 将加载的HDR纹理设置为场景的背景。这意味着整个场景的背景将被这个HDR图像覆盖
-  // scene.background = texture;
-  // 将HDR纹理同时设置为场景的环境纹理。环境纹理会影响场景中所有物体的反射和折射效果，特别是对于使用了MeshStandardMaterial或MeshPhysicalMaterial的材料
-  // scene.environment = texture;
-=======
   texture.mapping = THREE.EquirectangularReflectionMapping;
   // 将加载的HDR纹理设置为场景的背景。这意味着整个场景的背景将被这个HDR图像覆盖
   scene.background = texture;
   // 将HDR纹理同时设置为场景的环境纹理。环境纹理会影响场景中所有物体的反射和折射效果，特别是对于使用了MeshStandardMaterial或MeshPhysicalMaterial的材料
   scene.environment = texture;
->>>>>>> c0077bf267c699cd17032aa0fc0940d3fc518d3c
 })
 
 const scene = new THREE.Scene();
@@ -68,20 +60,13 @@ const material = new THREE.MeshStandardMaterial({
   metalness: 0.7,
   roughness: 0.1,
   // envMap属性被设置为之前加载的立方体贴图，这样材质就能反射出加载的环境映射
-<<<<<<< HEAD
-  // envMap: envMapTexture,
-=======
   envMap: envMapTexture,
->>>>>>> c0077bf267c699cd17032aa0fc0940d3fc518d3c
 })
 
 // 场景的背景为环境映射纹理，使得渲染的场景背景与物体反射的环境相匹配
 scene.background = envMapTexture;
 // 该纹理贴图将会被设为场景中所有物理材质的环境贴图, 场景的全局环境，这会影响场景中所有具有环境映射属性的材质
-<<<<<<< HEAD
 // 在此会影响 sphereGeometry 的表面反射
-=======
->>>>>>> c0077bf267c699cd17032aa0fc0940d3fc518d3c
 scene.environment = envMapTexture;
 
 const sphere = new THREE.Mesh(sphereGeometry, material)
